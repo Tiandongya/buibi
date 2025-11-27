@@ -14,10 +14,18 @@ RUN apt-get update && apt-get install -y \
 COPY package*.json ./
 RUN npm install --production
 
-# 3. 复制应用代码
-COPY unified-server.js black-browser.js models.json ./ 
-COPY entrypoint.sh /entrypoint.sh
+# 3. 下载 camoufox 浏览器（关键步骤）
+ARG CAMOUFOX_URL
+RUN curl -sSL ${CAMOUFOX_URL} -o camoufox-linux.tar.gz && \
+    tar -xzf camoufox-linux.tar.gz && \
+    rm camoufox-linux.tar.gz && \
+    chmod +x /app/camoufox-linux/camoufox
 
+# 4. 复制应用代码
+COPY unified-server.js black-browser.js models.json ./
+
+# 5. 复制 entrypoint.sh 并赋予执行权限
+COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && \
     mkdir -p ./auth && chown -R node:node /app
 
